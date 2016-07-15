@@ -1,0 +1,142 @@
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:int="http://www.springframework.org/schema/integration"
+       xmlns:int-ftp="http://www.springframework.org/schema/integration/ftp"
+       xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans
+	   					   http://www.springframework.org/schema/beans/spring-beans.xsd
+	   					   http://www.springframework.org/schema/integration/ftp
+	                       http://www.springframework.org/schema/integration/ftp/spring-integration-ftp-2.0.xsd">
+
+    <!-- Configurer that replaces ${...} placeholders with values from a properties file -->
+    <bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="location">
+            <value>properties/amis-ftp-connector.properties</value>
+        </property>
+    </bean>
+
+    <bean id="jdbcConnector" class="org.fao.fenix.data.JDBCConnector">
+        <property name="DB_USERNAME" value="${jdbc.username}" />
+        <property name="DB_PASSWORD" value="${jdbc.password}" />
+        <property name="DB_URL" value="jdbc:postgresql://localhost/${jdbc.dbname}" />
+    </bean>
+
+
+    <bean id="amisDataImporter" class="org.fao.fenix.data.AMISDataImporter">
+        <property name="jdbcConnector" ref="jdbcConnector" />
+        <constructor-arg value="download" />
+    </bean>
+
+    <bean id="csvBasicValidator" class="org.fao.fenix.data.CSVBasicValidator">
+        <property name="jdbcConnector" ref="jdbcConnector" />
+    </bean>
+
+    <bean id="emailSender" class="org.fao.fenix.email.EmailSender">
+        <property name="SMTP_HOST" value="${email.smtp.host}" />
+        <property name="USERNAME" value="${email.username}" />
+        <property name="PASSWORD" value="${email.password}" />
+        <property name="sendToIGCContacts" value="${email.sendToIGCContacts}" />
+        <property name="sendToDevelopers" value="${email.sendToDevelopers}" />
+        <property name="sendToFAOContacts" value="${email.sendToFAOContacts}" />
+        <property name="ccToFAOContacts" value="${email.ccToFAOContacts}" />
+    </bean>
+
+
+    <!-- FTP Task -->
+    <bean id="ftpTask" class="org.fao.fenix.ftp.FTPTask">
+        <constructor-arg value="download" />
+        <property name="serverAddress" value="${ftp.serverAddress}" />
+        <property name="user" value="${ftp.user}" />
+        <property name="username" value="${ftp.username}" />
+        <property name="password" value="${ftp.password}" />
+        <property name="remoteDirectory" value="${ftp.remoteDirectory}" />
+        <property name="amisDataImporter" ref="amisDataImporter" />
+        <property name="csvBasicValidator" ref="csvBasicValidator" />
+        <property name="jdbcConnector" ref="jdbcConnector" />
+        <property name="emailSender" ref="emailSender" />
+    </bean>
+
+
+    <!-- Spring Quartz:  Bean for the target class (via jobClass) and method to run (via jobDataAsMap) -->
+    <bean name="ftpJob" class="org.springframework.scheduling.quartz.JobDetailBean">
+        <property name="jobClass" value="org.fao.fenix.ftp.FTPJob"></property>
+        <property name="jobDataAsMap">
+            <map>
+                <entry key="ftpTask" value-ref="ftpTask" />
+            </map>
+        </property>
+    </bean>
+
+    <!-- Configure Quartz trigger to define when will run your scheduler job.-->
+    <!-- Simple Trigger, run every 5 seconds -->
+    <bean id="simpleTrigger"
+          class="org.springframework.scheduling.quartz.SimpleTriggerBean">
+        <property name="jobDetail" ref="ftpJob" />
+        <property name="repeatInterval" value="5000" />
+        <property name="startDelay" value="1000" />
+
+    </bean>
+
+    <!-- Cron Trigger, run every 5 seconds -->
+    <bean id="cronTrigger"
+          class="org.springframework.scheduling.quartz.CronTriggerBean">
+
+        <property name="jobDetail" ref="ftpJob" />
+        <property name="cronExpression" value="0/5 * * * * ?" />
+    </bean>
+
+   <!-- Create a Scheduler factory bean to integrate both job detail and trigger together. -->
+    <bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+        <property name="jobDetails">
+            <list>
+                <ref bean="ftpJob" />
+            </list>
+        </property>
+
+        <property name="triggers">
+            <list>
+                <ref bean="simpleTrigger" />
+            </list>
+        </property>
+    </bean>
+
+
+
+    <!-- FTP -->
+    <!--<bean id="ftpClientFactory"
+          class="org.springframework.integration.ftp.session.DefaultFtpSessionFactory">
+        <property name="host" ref="${ftp.serverAddress}" />
+        &lt;!&ndash;<property name="port" value="22"/> ?     &ndash;&gt;
+        <property name="username" value="${ftp.username}" />
+        <property name="password" value="${ftp.password}"/>
+        <property name="clientMode" value="0"/>
+        <property name="fileType" value="2"/>
+    </bean>-->
+
+    <!-- channel = pipe to which content can be written to by producers and read from by
+    consumers -->
+    <!-- this channel will contain the FTP files -->
+<!--    <int:channel id="ftpFiles">
+    </int:channel>-->
+
+     <!-- connects to the FTP by using the ftp client Factory -->
+    <!-- It scans for csv files and then sends a Message with a File payload to the first channel
+     containing the FTP files .
+     The scanning is done by the poller-->
+
+    <!--<int-ftp:inbound-channel-adapter id="ftpInbound"
+                                     channel="ftpFiles"
+                                     session-factory="ftpClientFactory"
+                                     charset="UTF-8"
+                                     auto-create-local-directory="true"
+                                     delete-remote-files="false"
+                                     filename-pattern="*.csv"
+                                     remote-directory="${ftp.remoteDirectory}"
+                                     local-directory="${ftp.downloadDirectory}">
+        <int:poller fixed-rate="1000"/>
+    </int-ftp:inbound-channel-adapter>-->
+
+
+</beans>
+

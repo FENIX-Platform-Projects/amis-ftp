@@ -1,0 +1,11 @@
+IGC-FTP Uploader requires that an empty temporary table be available in the database, for the IGC Daily Indicators (GOI and Sub-Indices).
+
+The queries are as follows:
+---------------------------
+
+CREATE TABLE igc_daily_indicators_temp AS
+  SELECT * FROM AMIS_IGC_DAILY_MARKET_MONITOR_INDICATORS_b65370f1;
+
+
+THEN delete Rows:
+  DELETE FROM igc_daily_indicators_temp;
