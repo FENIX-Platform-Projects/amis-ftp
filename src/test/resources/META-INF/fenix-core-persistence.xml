@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="1.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_1_0.xsd ">
+	<persistence-unit name="fenix-core-persistence" transaction-type="RESOURCE_LOCAL">
+		<class>org.fao.fenix.core.domain.coding.Code</class>
+		<class>org.fao.fenix.core.domain.coding.CodingSystem</class>
+		<class>org.fao.fenix.core.domain.coding.DCMTMapping</class>
+		<class>org.fao.fenix.core.domain.coding.DCMTStructure</class>
+		<class>org.fao.fenix.core.domain.coding.GeneralMapping</class>
+		<class>org.fao.fenix.core.domain.coding.DCMTSingleCode</class>
+		<class>org.fao.fenix.core.domain.coding.CodingHierarchy</class>
+		<class>org.fao.fenix.core.domain.mu.ConversionRate</class>
+		<class>org.fao.fenix.core.domain.dataset.CoreContent</class>
+		<class>org.fao.fenix.core.domain.dataset.CoreDataset</class>
+<!--		<class>org.fao.fenix.core.domain.dataset.FlexibleDataset</class>-->
+		<class>org.fao.fenix.core.domain.dataset.Dataset</class>
+		<class>org.fao.fenix.core.domain.dataset.DatasetType</class>
+		<class>org.fao.fenix.core.domain.dataset.DateRangeDefinition</class>
+		<class>org.fao.fenix.core.domain.dataset.Descriptor</class>
+		<class>org.fao.fenix.core.domain.dataset.FlexDataset</class>
+		<class>org.fao.fenix.core.domain.mu.MeasurementUnit</class>
+		<class>org.fao.fenix.core.domain.dataset.NumericRangeDefinition</class>
+		<class>org.fao.fenix.core.domain.dataset.Option</class>
+		<class>org.fao.fenix.core.domain.dataset.QualitativeCoreContent</class>
+		<class>org.fao.fenix.core.domain.dataset.QuantitativeCoreContent</class>
+		<class>org.fao.fenix.core.domain.dataset.IndexCoreContent</class>
+<!--		<class>org.fao.fenix.core.domain.dataset.FlexibleContent</class>-->
+		<class>org.fao.fenix.core.domain.dataset.Range</class>
+		<class>org.fao.fenix.core.domain.dataset.RangeDefinition</class>
+		<class>org.fao.fenix.core.domain.Resource</class>
+		<class>org.fao.fenix.core.domain.dataset.SingleDate</class>
+		<class>org.fao.fenix.core.domain.dataset.SingleNumeric</class>
+		<class>org.fao.fenix.core.domain.dataset.SingleText</class>
+		<class>org.fao.fenix.core.domain.Source</class>
+		<class>org.fao.fenix.core.domain.dataset.FlexRow</class>
+		<class>org.fao.fenix.core.domain.dataset.FlexCell</class>
+		<class>org.fao.fenix.core.domain.ipc.IPCWorkflowInfo</class>
+		<class>org.fao.fenix.core.domain.ipc.IPCProvincesInfo</class>
+		<properties>
+			<property name="" value="Qwaszx" />
+		</properties>
+	</persistence-unit>
+</persistence>

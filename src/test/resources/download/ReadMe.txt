@@ -1,0 +1,1 @@
+FTP files are downloaded to this folder
