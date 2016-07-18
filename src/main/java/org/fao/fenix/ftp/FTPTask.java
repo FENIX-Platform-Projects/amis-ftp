@@ -41,6 +41,7 @@ import java.io.FileOutputStream;
 
 import java.io.File;
 import java.sql.SQLException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
 import java.util.ArrayList;
@@ -207,36 +208,46 @@ public class FTPTask {
         return true;
     }
 
-    private void  validateAndImportFile(FTPFile[] ftpFiles, String datasetDirectoryName) {
+    private void  validateAndImportFile(FTPFile[] ftpFiles, String datasetDirectoryName)  {
+
+        String datasetCode = "";
+        String tempTableName = "";
+
+        if(datasetDirectoryName.equalsIgnoreCase("indices")){
+            datasetCode = "AMIS_IGC_DAILY_INDICATORS";
+            tempTableName = "igc_daily_indicators_temp";
+        }
+
+        jdbcConnector.openConnection();
+        // Check the last modified date of the database
+        String lastModifiedDate = amisDataImporter.getLastModifiedDate(datasetCode);
+
+        jdbcConnector.closeConnection();
+
+        System.out.println("=== amis-ftp === FTPTask: validateAndImportFile: == INFO == lastModifiedDate "+ lastModifiedDate);
 
                 for (FTPFile file : ftpFiles) {
-                   // if (!file.isFile() && !file.getName().endsWith(".csv")) {
-                      //  continue;
-                   // }
 
                     Date fileDate = file.getTimestamp().getTime();
                     String formattedFileDate = df.format(fileDate);
-                    Date today = new java.util.Date();
+                    Date today = new Date();
                     String formattedTodayDate = df.format(today);
 
-                    if (formattedFileDate.equals(formattedTodayDate)) {
-                        String datasetCode = "";
-                        String tempTableName = "";
-                        if(datasetDirectoryName.equalsIgnoreCase("indices")){
-                            datasetCode = "AMIS_IGC_DAILY_INDICATORS";
-                            tempTableName = "igc_daily_indicators_temp";
-                        }
+                    System.out.println("=== amis-ftp === FTPTask: validateAndImportFile: == INFO == formattedFileDate "+ formattedFileDate);
 
-                        jdbcConnector.openConnection();
+                    Date lmd = null;
 
-                        // Check the last modified date of the database
-                        String lastModifiedDate = amisDataImporter.getLastModifiedDate(datasetCode);
+                      try{
+                         lmd =   df.parse(lastModifiedDate);
+                      } catch (ParseException ex){
+                          System.out.println("=== amis-ftp === FTPTask: validateAndImportFile: == ERROR == cannot parse last modified date "+ lastModifiedDate);
+                      }
 
-                        System.out.println("=== amis-ftp === FTPTask: validateAndImportFile: == INFO == formattedFileDate "+ formattedFileDate);
-                        System.out.println("=== amis-ftp === FTPTask: validateAndImportFile: == INFO == lastModifiedDate "+ lastModifiedDate);
-
+                    if (formattedFileDate.equals(formattedTodayDate) ||  fileDate.after(lmd)) {
 
                         if(!formattedFileDate.equals(lastModifiedDate)){
+
+                            jdbcConnector.openConnection();
 
                             //Retrieve the file from the FTP and place in download directory
                             retrieveFileFromFTP(formattedTodayDate, file);
@@ -294,11 +305,11 @@ public class FTPTask {
 
                             csvBasicValidator.closeCSVParser();
 
+                            jdbcConnector.closeConnection();
+
                         }else{
                             System.out.println("=== amis-ftp === FTPTask: validateAndImportFile: == WARNING == The dataset was last modified on "+lastModifiedDate+", which matches the date of the FTP file (i.e."+formattedFileDate+") - so there is no need to re-upload");
                         }
-
-                        jdbcConnector.closeConnection();
 
                     }
                     else {
